@@ -3,18 +3,34 @@
 
 name: Swift
 
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  release:
+    types: [created]
 
 jobs:
   build:
-
     runs-on: macos-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: swift build -v
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build -c release -v
+
+  release:
+    needs: build
+    runs-on: macos-latest
+    if: github.event_name == 'release' && github.event.action == 'created'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release binary
+        run: swift build -c release
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: .build/release/OverlayNotify
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
