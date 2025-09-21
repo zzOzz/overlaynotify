@@ -1,8 +1,8 @@
 class Overlaynotify < Formula
   desc "Lightweight macOS CLI tool for centered overlay notifications"
   homepage "https://github.com/zzOzz/overlaynotify"
-  url "https://github.com/zzOzz/overlaynotify/releases/download/v1.0.0a/OverlayNotify"
-  sha256 "d590fe997fb58993ac7bd658823fe4cba0283da6270cd31ebce0c84767684356"
+  url "https://github.com/zzOzz/overlaynotify/releases/download/v1.0.0b/OverlayNotify"
+  sha256 "b138790875dc74a65c70046863ba5ff76c91a57daa5918f171ce698cacfd1a12"
   license "MIT"
 
   depends_on :macos

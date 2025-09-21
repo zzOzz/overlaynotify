@@ -23,7 +23,7 @@ jobs:
   release:
     needs: build
     runs-on: macos-latest
-    if: github.event_name == 'release' && github.event.action == 'created'
+    # if: github.event_name == 'release' && github.event.action == 'created'
     steps:
       - uses: actions/checkout@v4
       - name: Build release binary
