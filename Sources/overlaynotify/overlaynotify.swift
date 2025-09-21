@@ -93,4 +93,4 @@ if let durationIndex = args.firstIndex(of: "--duration"), args.count > durationI
 
 let notifier = NotificationWindow()
 notifier.show(message: message, duration: duration)
-RunLoop.main.run(until: Date().addingTimeInterval(duration + 2.0))
+RunLoop.main.run(until: Date().addingTimeInterval(duration))
