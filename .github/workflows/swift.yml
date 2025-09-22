@@ -8,27 +8,46 @@ on:
   push:
     branches: [ "main" ]
     tags: [ '*' ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-  release:
+  build:
     runs-on: macos-latest
-    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4
       - name: Build release binary
         run: swift build -c release
-      - name: Create GitHub Release
-        id: create_release
-        uses: ncipollo/release-action@v1
+      # - name: Create GitHub Release
+      #   id: create_release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     tag: ${{ github.ref_name }}
+      #     name: Release ${{ github.ref_name }}
+      #     generateReleaseNotes: true
+      # - name: Upload Release Asset
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     files: .build/release/OverlayNotify
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          tag: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          generateReleaseNotes: true
-      - name: Upload Release Asset
+          path: .build/release/OverlayNotify
+      - name: Find all files to upload
+        id: find_files
+        run: |
+          find binaries -type f > files.txt
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          cat files.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: .build/release/OverlayNotify
+          files: ${{ steps.find_files.outputs.files }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
