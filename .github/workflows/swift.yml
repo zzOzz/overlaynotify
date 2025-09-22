@@ -42,7 +42,7 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: OverlayNotify
+          path: ./binaries
       - name: Find all files to upload
         id: find_files
         run: |
