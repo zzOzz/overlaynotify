@@ -151,15 +151,86 @@ class NotificationWindow {
     }
 }
 
+// MARK: - Stdin Handling
+
+func isPipe() -> Bool {
+    var fileInfo = stat()
+    fstat(FileHandle.standardInput.fileDescriptor, &fileInfo)
+    return (fileInfo.st_mode & S_IFMT) == S_IFIFO
+}
+
+func readStdin() -> String {
+    var input = ""
+    while let line = readLine() {
+        input += line + "\n"
+    }
+    // Trim trailing newline
+    if input.hasSuffix("\n") {
+        input.removeLast()
+    }
+    return input
+}
+
+// MARK: - Completion Script
+
+func printCompletion(shell: String) {
+    let commandName = "OverlayNotify"
+    let options = ["--message", "--duration", "--completion"]
+
+    switch shell.lowercased() {
+    case "bash":
+        print("""
+        _\(commandName)_completion() {
+            local cur prev opts
+            COMPREPLY=()
+            cur="${COMP_WORDS[COMP_CWORD]}"
+            opts="\(options.joined(separator: " "))"
+
+            if [[ ${cur} == -* ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+                return 0
+            fi
+        }
+        complete -F _\(commandName)_completion \(commandName)
+        """)
+
+    case "zsh":
+        print("""
+        #compdef \(commandName)
+
+        _arguments \\
+            "\(options.map { "'\($0)'" }.joined(separator: " \\\n    "))"
+        """)
+
+    case "fish":
+        for option in options {
+            print("complete -c \(commandName) -l \(option.dropFirst(2)) -d \"\(option) option\"")
+        }
+
+    default:
+        print("Unsupported shell: \(shell). Please use 'bash', 'zsh', or 'fish'.")
+    }
+}
+
 // MARK: - CLI Entry Point
 
 var message = "Hello!"
 var duration: TimeInterval = 0.5
 
 let args = CommandLine.arguments
+
+if let completionIndex = args.firstIndex(of: "--completion"), args.count > completionIndex + 1 {
+    let shell = args[completionIndex + 1]
+    printCompletion(shell: shell)
+    exit(0)
+}
+
 if let messageIndex = args.firstIndex(of: "--message"), args.count > messageIndex + 1 {
     message = args[messageIndex + 1]
+} else if isPipe() {
+    message = readStdin()
 }
+
 if let durationIndex = args.firstIndex(of: "--duration"), args.count > durationIndex + 1 {
     if let parsed = Double(args[durationIndex + 1]) {
         duration = parsed
