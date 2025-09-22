@@ -6,8 +6,8 @@ name: Swift
 
 on:
   push:
-    branches: [ "main" ]
-    tags: [ '*' ]
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
